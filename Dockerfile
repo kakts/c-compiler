@@ -1,6 +1,6 @@
 # from https://www.sigbus.info/compilerbook/Dockerfile
 
-FROM ubuntu:latest
+FROM --platform=linux/x86_64 ubuntu:latest
 RUN apt update
 RUN DEBIAN_FRONTEND=noninteractive apt install -y gcc make git binutils libc6-dev gdb sudo
 RUN adduser --disabled-password --gecos '' user
