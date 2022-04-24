@@ -1,10 +1,11 @@
-# 9cc
-C-Compiler  
-https://www.sigbus.info/compilerbook
+CFLAGS=-std=c11 -g -static
 
-# How to test
+9cc: 9cc.c
 
-```bash
-./test.sh
+test: 9cc
+		./test.sh
 
-```
+clean: # Delete temporary files
+	rm -f 9cc *.o *~ tmp*
+
+.PHONY: test clean
