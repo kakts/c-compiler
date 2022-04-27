@@ -35,6 +35,29 @@ struct Token {
 // 現在着目しているトークン
 Token *token;
 
+/**
+ * 入力プログラム
+ * 
+ * エラー時にどこでエラーが起きているかを表示するためにプログラム全体を保持する
+ */
+char *user_input;
+
+/**
+ * エラー箇所を報告する
+ */
+void error_at(char *loc, char *fmt, ...) {
+    va_list ap;
+    va_start(ap, fmt);
+
+    int pos = loc - user_input;
+    fprintf(stderr, "%s\n", user_input);
+    fprintf(stderr, "%*s", pos, " "); // pos個の空白を出力
+    fprintf(stderr, "^ ");
+    vfprintf(stderr, fmt, ap);
+    fprintf(stderr, "\n");
+    exit(1);
+}
+
 // エラーを報告するための関数
 void error(char *fmt, ...) {
     va_list ap;
@@ -58,7 +81,7 @@ bool consume(char op) {
 // それ以外の場合にはエラーを報告する
 void expect(char op) {
     if (token->kind != TK_RESERVED || token->str[0] != op) {
-        error("'%c'ではありません", op);
+        error_at(token->str, "'%c'ではありません", op);
     }
     token = token->next;
 }
@@ -67,7 +90,7 @@ void expect(char op) {
 // それ以外の場合にはエラー
 int expect_number() {
     if (token->kind != TK_NUM) {
-        error("not a number");
+        error_at(token->str, "not a number");
     }
 
     int val = token->val;
@@ -96,14 +119,15 @@ Token *new_token(TokenKind kind, Token *cur, char *str) {
 }
 
 /**
- * 入力文字列pをトークナイズしてそれを返す
+ * 入力文字列`user_input`をトークナイズしてそれを返す
  * 
  * 連結リストを構築する。
  * ダミーのhead要素を作り、そこに新しい要素をつなげていき、最後にhead->nextを返すようにするとコードが簡単になる
  * この方法では、headに割り当てられたメモリアほとんど無駄になるが、ローカル変数をアロケートするコストはほぼゼロのため
  * 気にしなくて良い
  */
-Token *tokenize(char *p) {
+Token *tokenize() {
+    char *p = user_input;
     Token head;
     head.next = NULL;
     Token *cur = &head;
@@ -126,7 +150,7 @@ Token *tokenize(char *p) {
             continue;
         }
 
-        error("トークナイズできない");
+        error_at(p, "トークナイズできない");
     }
 
     new_token(TK_EOF, cur, p);
@@ -139,7 +163,8 @@ int main(int argc, char **argv) {
         return 1;
     }
 
-    token = tokenize(argv[1]);
+    user_input = argv[1];
+    token = tokenize();
 
     // 出力するアセンブリコードを表示
     printf(".intel_syntax noprefix\n");
