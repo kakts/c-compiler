@@ -55,4 +55,5 @@ dkms.conf
 .vscode
 
 tmp*
+9cc/9cc
 9cc/tmp.s

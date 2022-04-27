@@ -22,7 +22,13 @@ assert() {
 
 assert 0 0
 assert 42 42
+
+# 数式テスト
 assert 21 "5+20-4"
 assert 17 "10-8+15"
+
+# 数式テスト　空白文字を含んだ数式を解釈できる
+assert 41 " 12 + 34 - 5"
+assert 100 "90 + 38 - 28"
 
 echo OK
