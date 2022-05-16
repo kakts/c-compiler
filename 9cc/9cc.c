@@ -202,6 +202,7 @@ Node *new_node_num(int val) {
 
 Node *expr();
 Node *mul();
+Node *unary();
 Node *primary();
 
 /**
@@ -224,20 +225,36 @@ Node *expr() {
 }
 
 /**
- * mul = primary ("*" primary | "/" primary)* という生成規則に則ってパースする
+ * mul = unary ("*" unary | "/" unary)* という生成規則に則ってパースする
  */
 Node *mul() {
-    Node *node = primary();
+    Node *node = unary();
 
     for (;;) {
         if (consume('*')) {
-            node = new_binary(ND_MUL, node, primary());
+            node = new_binary(ND_MUL, node, unary());
         } else if (consume('/')) {
-            node = new_binary(ND_DIV, node, primary());
+            node = new_binary(ND_DIV, node, unary());
         } else {
             return node;
         }
     }
+}
+
+/**
+ * 単項演算子用の規則
+ * unary = ("+" | "-")? | primary という生成規則に則ってパースする
+ */
+Node *unary() {
+    if (consume('+')) {
+        // +x を xに置き換える
+        return unary();
+    }
+    if (consume('-')) {
+        // -x を 0 - xに置き換える
+        return new_binary(ND_SUB, new_node_num(0), unary());
+    }
+    return primary();
 }
 
 /**
